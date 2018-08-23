@@ -1,23 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.Networking.BackgroundTransfer;
-using Windows.Security.Credentials;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using FluentFTP;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -31,6 +19,11 @@ namespace FileTransfer
     {
         static bool bIsDownload = true;
         StorageFolder pickedFolder = null;
+        StorageFile pickedFile = null;
+
+        string strHostName = string.Empty;
+        string strUserName = string.Empty;
+        string strPassword = string.Empty;
 
         public MainPage()
         {
@@ -39,13 +32,28 @@ namespace FileTransfer
 
         private async void ftpBtnText_Click(object sender, RoutedEventArgs e)
         {
-            FolderPicker folderPicker = new FolderPicker();
-            folderPicker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
-            folderPicker.ViewMode = PickerViewMode.Thumbnail;
-            folderPicker.FileTypeFilter.Add(".txt");
+            if (bIsDownload)
+            {
+                FolderPicker folderPicker = new FolderPicker();
+                folderPicker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
+                folderPicker.ViewMode = PickerViewMode.Thumbnail;
+                folderPicker.FileTypeFilter.Add(".txt");
 
-            pickedFolder = await folderPicker.PickSingleFolderAsync();
-            ftpPathBox.Text = pickedFolder.Path;
+                pickedFolder = await folderPicker.PickSingleFolderAsync();
+                if (pickedFolder != null)
+                    ftpPathBox.Text = pickedFolder.Path;
+            }
+            else
+            {
+                FileOpenPicker fileOpenPicker = new FileOpenPicker();
+                fileOpenPicker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
+                fileOpenPicker.ViewMode = PickerViewMode.Thumbnail;
+                fileOpenPicker.FileTypeFilter.Add("*");
+
+                pickedFile = await fileOpenPicker.PickSingleFileAsync();
+                if (pickedFile != null)
+                    ftpPathBox.Text = pickedFile.Path;
+            }
         }
 
         private async void ftpStrtText_Click(object sender, RoutedEventArgs e)
@@ -63,29 +71,27 @@ namespace FileTransfer
                         }
                         else
                         {
-                            ContentDialog dialog = Helper.GetDialog();
-                            dialog.Content = "FTP Upload is not supported";
-                            await dialog.ShowAsync();
+                            await HandleFTPUpload();
                         }
                     }
                     else
                     {
                         ContentDialog dialog = Helper.GetDialog();
-                        dialog.Content = "Please select a path for above operation";
+                        dialog.Content = Helper.GetResourceString("ID_SEL_PATH");
                         await dialog.ShowAsync();
                     }
                 }
                 else
                 {
                     ContentDialog dialog = Helper.GetDialog();
-                    dialog.Content = "Please enter FTP Server URL";
+                    dialog.Content = Helper.GetResourceString("ID_SEL_FTPURL");
                     await dialog.ShowAsync();
                 }
             }
             catch (Exception ex)
             {
                 ContentDialog dialog = Helper.GetDialog();
-                dialog.Content = ex;
+                dialog.Content = ex.Message;
                 await dialog.ShowAsync();
             }
         }
@@ -93,39 +99,41 @@ namespace FileTransfer
         private void Operation_Checked(object sender, RoutedEventArgs e)
         {
             if (ftpBtn2Text != null)
+            {
                 if (ftpBtn2Text.IsChecked == true)
+                {
                     bIsDownload = false;
+                    ftpPathBox.Header = Helper.GetResourceString("ID_BRWS_FILE");
+                }
+                else
+                {
+                    bIsDownload = true;
+                    ftpPathBox.Header = Helper.GetResourceString("ID_BRWS_FOLDER");
+                }
+            }
         }
 
         async Task HandleFTPDownload()
         {
+            strHostName = string.Empty;
+            strUserName = string.Empty;
+            strPassword = string.Empty;
+
             try
             {
-                //Uri uri = new Uri(ftpUrlBox.Text.Trim());
-                //StorageFile storageFile = await pickedFolder.CreateFileAsync("DownloadedFile.pdf", CreationCollisionOption.ReplaceExisting);
-
-                //BackgroundDownloader backgroundDownloader = new BackgroundDownloader();
-                //DownloadOperation downloadOperation = backgroundDownloader.CreateDownload(uri, storageFile);
-
-                //PasswordCredential passwordCredential = new PasswordCredential();
-                //passwordCredential.UserName = "ebX_Developer_M2T";
-                //passwordCredential.Password = "7ujmKI";
-                //backgroundDownloader.ServerCredential = passwordCredential;
-
-                //ftpBar.Visibility = Visibility.Visible;
-                //await downloadOperation.StartAsync();
-                //ftpBar.Visibility = Visibility.Collapsed;
-
-                //ResponseInformation responseInformation = downloadOperation.GetResponseInformation();
-                //ftpStatusText.Text = responseInformation != null ? responseInformation.StatusCode.ToString() : string.Empty;
+                string strRemotePath = string.Empty;
 
                 string strURL = ftpUrlBox.Text;
                 string[] strItems = strURL.Split('/');
+                for (int index = 3; index < strItems.Length; index++)
+                {
+                    strRemotePath += "/" + strItems[index];
+                }
 
-                string strLocalFile = pickedFolder.Path + "\\" + strItems[3];
-                string strRemotePath = "/" + strItems[3];
+                string strLocalFile = pickedFolder.Path + "\\" + strItems[strItems.Length - 1];
 
-                FtpClient ftpClient = new FtpClient("157.69.121.248", "ebX_Developer_M2T", "7ujmKI");
+                FetchCredentials(strItems[2], out strHostName, out strUserName, out strPassword);
+                FtpClient ftpClient = new FtpClient(strHostName, strUserName, strPassword);
                 await ftpClient.ConnectAsync();
 
                 ftpBar.Visibility = Visibility.Visible;
@@ -136,13 +144,81 @@ namespace FileTransfer
                 });
                 ftpBar.Visibility = Visibility.Collapsed;
 
-                ftpStatusText.Text = bSuccess ? "File download completed successfully" : "File download failed";
+                ftpStatusText.Foreground = bSuccess ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Red);
+                ftpStatusText.Text = bSuccess ? Helper.GetResourceString("ID_DWNLD_SUCCESS") : Helper.GetResourceString("ID_DWNLD_FAIL");
             }
             catch (Exception ex)
             {
                 ContentDialog dialog = Helper.GetDialog();
-                dialog.Content = ex;
+                dialog.Content = ex.Message;
                 await dialog.ShowAsync();
+            }
+        }
+
+        async Task HandleFTPUpload()
+        {
+            strHostName = string.Empty;
+            strUserName = string.Empty;
+            strPassword = string.Empty;
+
+            try
+            {
+                string strLocalFile = pickedFile.Path;
+                string strRemotePath = string.Empty;
+
+                string strURL = ftpUrlBox.Text;
+                string[] strItems = strURL.Split('/');
+                for (int index = 3; index < strItems.Length; index++)
+                {
+                    strRemotePath += "/" + strItems[index];
+                }
+                strRemotePath += "/" + pickedFile.Name;
+
+                FetchCredentials(strItems[2], out strHostName, out strUserName, out strPassword);
+                FtpClient ftpClient = new FtpClient(strHostName, strUserName, strPassword);
+                await ftpClient.ConnectAsync();
+
+                ftpBar.Visibility = Visibility.Visible;
+                bool bSuccess = await Task.Run(async () =>
+                {
+                    bool bRet = await ftpClient.UploadFileAsync(strLocalFile, strRemotePath, FtpExists.Overwrite, false, FtpVerify.None);
+                    return bRet;
+                });
+                ftpBar.Visibility = Visibility.Collapsed;
+
+                ftpStatusText.Foreground = bSuccess ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Red);
+                ftpStatusText.Text = bSuccess ? Helper.GetResourceString("ID_UPLOAD_SUCCESS") : Helper.GetResourceString("ID_UPLOAD_FAIL");
+            }
+            catch (Exception ex)
+            {
+                ContentDialog dialog = Helper.GetDialog();
+                dialog.Content = ex.Message;
+                await dialog.ShowAsync();
+            }
+        }
+
+        void FetchCredentials(string strCred, out string strHostName, out string strUserName, out string strPassword)
+        {
+            strHostName = string.Empty;
+            strUserName = string.Empty;
+            strPassword = string.Empty;
+
+            if (!string.IsNullOrEmpty(strCred))
+            {
+                string[] strTemp = strCred.Split('@');
+
+                if (strTemp.Length > 0)
+                {
+                    strHostName = strTemp[1];
+
+                    string[] strCredentials = strTemp[0].Split(':');
+
+                    if (strCredentials.Length > 0)
+                    {
+                        strUserName = strCredentials[0];
+                        strPassword = strCredentials[1];
+                    }
+                }
             }
         }
     }

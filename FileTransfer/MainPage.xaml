@@ -9,7 +9,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <RelativePanel>
-        <TextBlock x:Uid="titleLabel" x:Name="titleText" Text="File Transfer Sample (HTTP / FTP)" FontSize="35" Margin="25,0" />
+        <TextBlock x:Uid="titleLabel" x:Name="titleText" Text="File Transfer Sample (FTP)" FontSize="35" Margin="25,0" />
 
         <TextBlock x:Uid="ftpLabel" x:Name="ftpText" Text="via FTP" Margin="50,30" RelativePanel.Below="titleText" FontSize="20" />
 
@@ -21,15 +21,15 @@
             </StackPanel>
             <ProgressBar x:Name="ftpBar" IsIndeterminate="True" Width="1000" Visibility="Collapsed" Margin="0,20" />
         
-            <TextBox x:Name="ftpUrlBox" Header="Enter FTP URL" Width="1000" Margin="0,10" />
+            <TextBox x:Uid="ftpUrlLabel" x:Name="ftpUrlBox" Header="Enter FTP URL" Width="1000" Margin="0,10" />
             <StackPanel Orientation="Horizontal" Margin="0,10">
-                <TextBox x:Name="ftpPathBox" Header="Browse Folder for Download / Upload" Width="800" />
+                <TextBox x:Uid="ftpPathLabel" x:Name="ftpPathBox" Header="Browse Folder to Download" Width="800" />
                 <Button x:Uid="ftpBtnLabel" x:Name="ftpBtnText" Content="Browse" Margin="50,10" Click="ftpBtnText_Click" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10">
                 <Button x:Uid="ftpStrtLabel" x:Name="ftpStrtText" Content="Start" Width="Auto" Click="ftpStrtText_Click" />
             </StackPanel>
-            <TextBlock x:Name="ftpStatusText" Margin="0,10" Width="Auto" Foreground="Green" />
+            <TextBlock x:Name="ftpStatusText" Margin="0,10" Width="Auto" />
         </StackPanel>
     </RelativePanel>
 </Page>

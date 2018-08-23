@@ -117,6 +117,30 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ftpBtn1Label.Content" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="ftpBtn2Label.Content" xml:space="preserve">
+    <value>Upload</value>
+  </data>
+  <data name="ftpBtnLabel.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="ftpLabel.Text" xml:space="preserve">
+    <value>via FTP</value>
+  </data>
+  <data name="ftpPathLabel.Header" xml:space="preserve">
+    <value>Browse Folder to Download</value>
+  </data>
+  <data name="ftpSelLabel.Text" xml:space="preserve">
+    <value>Select Operation</value>
+  </data>
+  <data name="ftpStrtLabel.Content" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="ftpUrlLabel.Header" xml:space="preserve">
+    <value>Enter FTP URL</value>
+  </data>
   <data name="IDS_CHKDLG_CLOSE" xml:space="preserve">
     <value>Close</value>
   </data>
@@ -124,6 +148,36 @@
     <value>OK</value>
   </data>
   <data name="IDS_CHKDLG_TITLE" xml:space="preserve">
+    <value>File Transfer</value>
+  </data>
+  <data name="ID_BRWS_FILE" xml:space="preserve">
+    <value>Browse File for Upload</value>
+  </data>
+  <data name="ID_BRWS_FOLDER" xml:space="preserve">
+    <value>Browse Folder to Download</value>
+  </data>
+  <data name="ID_DWNLD_FAIL" xml:space="preserve">
+    <value>File download failed</value>
+  </data>
+  <data name="ID_DWNLD_SUCCESS" xml:space="preserve">
+    <value>File download completed successfully</value>
+  </data>
+  <data name="ID_SEL_FTPURL" xml:space="preserve">
+    <value>Please enter FTP Server URL</value>
+  </data>
+  <data name="ID_SEL_PATH" xml:space="preserve">
+    <value>Please select a path for above operation</value>
+  </data>
+  <data name="ID_UPLOAD_FAIL" xml:space="preserve">
+    <value>File upload failed</value>
+  </data>
+  <data name="ID_UPLOAD_SUCCESS" xml:space="preserve">
+    <value>File Upload completed successfully</value>
+  </data>
+  <data name="titleLabel.Text" xml:space="preserve">
+    <value>File Transfer Sample (FTP)</value>
+  </data>
+  <data name="AppName" xml:space="preserve">
     <value>File Transfer</value>
   </data>
 </root>
